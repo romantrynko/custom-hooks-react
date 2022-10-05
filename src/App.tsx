@@ -4,7 +4,19 @@ import AddressForm from './stepComponents/AddressForm';
 import AccountForm from './stepComponents/AccountForm';
 import { FormEvent, useState } from 'react';
 
-const initialState = {
+type FormData = {
+  firstName: string,
+  lastName: string,
+  age: string,
+  street: string,
+  city: string,
+  state: string,
+  zip: string,
+  email: string,
+  password: string,
+}
+
+const initialData: FormData = {
   firstName: '',
   lastName: '',
   age: '',
@@ -17,16 +29,32 @@ const initialState = {
 }
 
 function App() {
-  const [data,setData] = useState(initialState)
-  const { steps, currentStepIndex, step, isFirstStep, prev, next, isLastStep } = useMultistepForm([
-    <UserForm />,
-    <AddressForm />,
-    <AccountForm />
+  const [data, setData] = useState(initialData)
+
+  function updateFields(fields: Partial<FormData>) {
+    setData(prev => {
+      return { ...prev, ...fields }
+    })
+  }
+
+  const {
+    steps,
+    currentStepIndex,
+    step,
+    isFirstStep,
+    isLastStep,
+    prev,
+    next
+  } = useMultistepForm([
+    <UserForm {...data} updateFields={updateFields} />,
+    <AddressForm {...data} updateFields={updateFields} />,
+    <AccountForm {...data} updateFields={updateFields} />
   ])
 
   const onSubmit = (e: FormEvent) => {
     e.preventDefault()
-    next()
+    if (!isLastStep) return next()
+    alert('Account created successfully')
   }
 
   return (
@@ -37,7 +65,7 @@ function App() {
           top: '1rem',
           right: '1rem'
         }}>
-          {currentStepIndex + 1}/{steps.length}
+          {currentStepIndex + 1}{' '} /{' '}{steps.length}
         </div>
         {step}
         <div style={{
